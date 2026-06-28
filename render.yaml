@@ -11,5 +11,9 @@ services:
         value: 22
       - key: OPENAI_MODEL
         value: gpt-4.1-mini
+      - key: OPENAI_TTS_MODEL
+        value: gpt-4o-mini-tts
+      - key: OPENAI_TTS_VOICE
+        value: alloy
       - key: OPENAI_API_KEY
         sync: false
