@@ -13,6 +13,7 @@ const state = {
   deltaX: 0,
   playCount: 0,
   playSerial: 0,
+  audio: null,
 };
 
 const small = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
@@ -110,10 +111,29 @@ function persistSaved() {
   $("#savedCount").textContent = state.saved.length;
 }
 
-function updateCard(autoplay = true) {
+function stopPlayback() {
+  if (state.audio) {
+    state.audio.pause();
+    state.audio.removeAttribute("src");
+    state.audio.load();
+    state.audio = null;
+  }
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  $("#soundButton").classList.remove("speaking");
+}
+
+function setSpeaking(serial, speaking) {
+  if (serial === state.playSerial) $("#soundButton").classList.toggle("speaking", speaking);
+}
+
+function canUseServerSpeech() {
+  return location.protocol === "http:" || location.protocol === "https:";
+}
+
+function updateCard() {
   const q = current();
   if (!q) return;
-  if (window.speechSynthesis) speechSynthesis.cancel();
+  stopPlayback();
   state.playSerial += 1;
   state.playCount = 0;
   $("#playCount").textContent = "まだ再生していません";
@@ -129,7 +149,6 @@ function updateCard(autoplay = true) {
   $("#progressFill").style.width = `${((state.index + 1) / state.questions.length) * 100}%`;
   $("#reviewToggle").setAttribute("aria-pressed", String(isSaved(q)));
   $("#listenCard").className = "listen-card";
-  if (autoplay) setTimeout(speak, 320);
 }
 
 function preferredVoice() {
@@ -139,15 +158,11 @@ function preferredVoice() {
     || voices.find((v) => v.lang.startsWith("en"));
 }
 
-function speak() {
-  const q = current();
-  if (!q || !window.speechSynthesis || typeof SpeechSynthesisUtterance === "undefined") {
-    return toast("このブラウザは音声再生に対応していません");
+function speakWithBrowser(q, serial) {
+  if (!window.speechSynthesis || typeof SpeechSynthesisUtterance === "undefined") {
+    setSpeaking(serial, false);
+    return toast("音声を作れませんでした。通信を確認してもう一度押してください");
   }
-  const serial = ++state.playSerial;
-  state.playCount += 1;
-  $("#replayLabel").textContent = "もう一度聞く";
-  $("#playCount").textContent = `${state.playCount}回再生・何回でも聞けます`;
   speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(q.spoken);
   utterance.lang = "en-US";
@@ -155,17 +170,59 @@ function speak() {
   utterance.pitch = 1;
   const voice = preferredVoice();
   if (voice) utterance.voice = voice;
-  utterance.onstart = () => {
-    if (serial !== state.playSerial) return;
-    $("#soundButton").classList.add("speaking");
-  };
-  utterance.onend = utterance.onerror = () => {
-    if (serial === state.playSerial) $("#soundButton").classList.remove("speaking");
-  };
+  utterance.onstart = () => setSpeaking(serial, true);
+  utterance.onend = utterance.onerror = () => setSpeaking(serial, false);
   // 再生中の連打でも確実に先頭から聞き直せるよう、cancel後に短く間を置く。
   setTimeout(() => {
     if (serial === state.playSerial) speechSynthesis.speak(utterance);
   }, 60);
+}
+
+async function speak() {
+  const q = current();
+  if (!q) return;
+  const serial = ++state.playSerial;
+  stopPlayback();
+  state.playCount += 1;
+  $("#replayLabel").textContent = "もう一度聞く";
+  $("#playCount").textContent = `${state.playCount}回再生・何回でも聞けます`;
+
+  if (!canUseServerSpeech()) return speakWithBrowser(q, serial);
+
+  let didFallback = false;
+  const fallback = () => {
+    if (didFallback || serial !== state.playSerial) return;
+    didFallback = true;
+    setSpeaking(serial, false);
+    if (state.audio) {
+      state.audio.pause();
+      state.audio = null;
+    }
+    speakWithBrowser(q, serial);
+  };
+
+  const params = new URLSearchParams({
+    text: q.spoken,
+    speed: String(state.speed),
+    v: String(Date.now()),
+  });
+  const audio = new Audio(`/api/speech?${params.toString()}`);
+  audio.preload = "auto";
+  state.audio = audio;
+  audio.onplaying = () => setSpeaking(serial, true);
+  audio.onended = () => {
+    if (serial !== state.playSerial) return;
+    setSpeaking(serial, false);
+    if (state.audio === audio) state.audio = null;
+  };
+  audio.onerror = fallback;
+
+  try {
+    const play = audio.play();
+    if (play?.catch) await play;
+  } catch {
+    fallback();
+  }
 }
 
 function move(direction) {
@@ -249,7 +306,7 @@ $("#speedRange").addEventListener("input", (event) => {
 });
 $("#speedRange").dispatchEvent(new Event("input"));
 
-function goHome() { if (window.speechSynthesis) speechSynthesis.cancel(); showScreen($("#setupScreen")); }
+function goHome() { stopPlayback(); showScreen($("#setupScreen")); }
 $("#homeButton").addEventListener("click", goHome);
 $("#closeButton").addEventListener("click", goHome);
 $("#emptyBackButton").addEventListener("click", goHome);
@@ -288,6 +345,6 @@ document.addEventListener("keydown", (event) => {
 
 persistSaved();
 fetch("/api/status").then((res) => res.json()).then((data) => {
-  $("#apiStatus").textContent = data.apiReady ? `ChatGPT APIで出題（${data.model}）` : "内蔵問題でお試しできます";
+  $("#apiStatus").textContent = data.apiReady ? `ChatGPT APIで出題・音声再生（${data.model}）` : "内蔵問題でお試しできます";
   $("#apiDot").classList.toggle("online", data.apiReady);
 }).catch(() => { $("#apiStatus").textContent = "内蔵問題でお試しできます"; });
