@@ -2,7 +2,15 @@
 
 English number, date, and year listening flashcards for Japanese learners.
 
-This version is designed to run through Render so the browser never sees the OpenAI API key.
+Render app:
+
+https://flashcard2-yiaq.onrender.com/
+
+This version runs through Render so the browser never sees the OpenAI API key.
+
+The old GitHub Pages URL redirects to the Render app:
+
+https://vascdmedical-arch.github.io/flashcard2/
 
 ## Render setup
 
