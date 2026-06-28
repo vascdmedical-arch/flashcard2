@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#f4efe5" />
+    <title>NUMO — 英語の数字を、耳でつかむ</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-a"></div>
+    <div class="ambient ambient-b"></div>
+
+    <main class="app-shell">
+      <header class="topbar">
+        <button class="brand" id="homeButton" aria-label="ホームへ戻る">
+          <span class="brand-mark">N</span>
+          <span>NUMO</span>
+        </button>
+        <button class="saved-pill" id="savedButton" aria-label="復習リストを開く">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 4.5h10a1.5 1.5 0 0 1 1.5 1.5v14l-6.5-3.8L5.5 20V6A1.5 1.5 0 0 1 7 4.5Z"/></svg>
+          <span>復習</span><strong id="savedCount">0</strong>
+        </button>
+      </header>
+
+      <section class="screen setup-screen active" id="setupScreen" aria-labelledby="setupTitle">
+        <div class="eyebrow">LISTENING PRACTICE</div>
+        <h1 id="setupTitle">数字を、<br><em>耳でつかむ。</em></h1>
+        <p class="intro">見ればわかる数字も、聞くと迷う。<br>短い反復で、英語の数を音のかたまりに。</p>
+
+        <div class="choice-label">今日のトレーニング</div>
+        <div class="category-grid" role="radiogroup" aria-label="ジャンル">
+          <button class="category-card selected" data-category="numbers" role="radio" aria-checked="true">
+            <span class="category-icon number-icon">128</span>
+            <span class="category-copy"><strong>数字</strong><small>0 〜 1兆</small></span>
+            <span class="radio-dot"></span>
+          </button>
+          <button class="category-card" data-category="dates" role="radio" aria-checked="false">
+            <span class="category-icon calendar-icon"><i>SEP</i><b>23</b></span>
+            <span class="category-copy"><strong>日付・年</strong><small>月日と西暦</small></span>
+            <span class="radio-dot"></span>
+          </button>
+        </div>
+
+        <div class="distribution-note" id="distributionNote">
+          <span class="bar"><i></i></span>
+          <p><strong>よく使う範囲を多めに</strong><br>100〜1億の問題が約70%</p>
+        </div>
+
+        <button class="primary-button" id="startButton">
+          <span>はじめる</span>
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>
+        </button>
+        <div class="api-line"><span id="apiDot"></span><span id="apiStatus">出題エンジンを確認中…</span></div>
+      </section>
+
+      <section class="screen practice-screen" id="practiceScreen" aria-live="polite">
+        <div class="practice-head">
+          <div>
+            <span class="session-label" id="sessionLabel">NUMBERS</span>
+            <span class="progress-text"><b id="currentNumber">01</b> / <span id="totalNumber">12</span></span>
+          </div>
+          <button class="close-button" id="closeButton" aria-label="練習を終了">×</button>
+        </div>
+        <div class="progress-track"><span id="progressFill"></span></div>
+
+        <div class="card-stage" id="cardStage">
+          <article class="listen-card" id="listenCard">
+            <div class="card-topline">
+              <span class="kind-chip" id="kindChip">NUMBER</span>
+              <span class="source-chip" id="sourceChip">AI</span>
+            </div>
+
+            <button class="sound-orb" id="soundButton" aria-label="もう一度聞く">
+              <span class="sound-waves"><i></i><i></i><i></i><i></i><i></i></span>
+            </button>
+            <h2>聞こえた数字は？</h2>
+            <p class="listen-hint">
+              <strong id="replayLabel">タップで何度でも再生</strong>
+              <small id="playCount" aria-live="polite">まだ再生していません</small>
+            </p>
+
+            <button class="reveal-button" id="revealButton">
+              <span>答えを見る</span>
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12s3-5 8-5 8 5 8 5-3 5-8 5-8-5-8-5Z"/><circle cx="12" cy="12" r="2"/></svg>
+            </button>
+
+            <div class="answer-panel" id="answerPanel">
+              <span>ANSWER</span>
+              <strong id="answerText">621</strong>
+              <p id="spokenText">six hundred twenty-one</p>
+              <small id="answerNote"></small>
+            </div>
+          </article>
+        </div>
+
+        <div class="practice-controls">
+          <button class="review-toggle" id="reviewToggle" aria-pressed="false">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 4.5h10a1.5 1.5 0 0 1 1.5 1.5v14l-6.5-3.8L5.5 20V6A1.5 1.5 0 0 1 7 4.5Z"/></svg>
+            <span><strong>もう一度</strong><small>復習リストに残す</small></span>
+          </button>
+
+          <div class="speed-control">
+            <div class="speed-copy"><span>発音スピード</span><output id="speedOutput">0.85×</output></div>
+            <div class="range-row"><span>ゆっくり</span><input id="speedRange" type="range" min="0.6" max="1.2" step="0.05" value="0.85" aria-label="発音スピード"><span>ふつう</span></div>
+          </div>
+
+          <div class="swipe-guide"><span>←</span> スワイプで移動 <span>→</span></div>
+        </div>
+      </section>
+
+      <section class="screen empty-screen" id="emptyScreen">
+        <div class="empty-icon">✓</div>
+        <h2>復習リストは空です</h2>
+        <p>練習中に「もう一度」をチェックすると、<br>ここに問題が残ります。</p>
+        <button class="primary-button" id="emptyBackButton">練習をはじめる</button>
+      </section>
+
+      <div class="toast" id="toast" role="status"></div>
+    </main>
+    <!-- 通常のscriptとして読み込み、ファイルを直接開いた場合も操作できるようにする -->
+    <script src="./app.js"></script>
+  </body>
+</html>
