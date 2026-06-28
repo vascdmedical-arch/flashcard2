@@ -167,7 +167,10 @@ async function serveFile(req, res) {
     const info = await stat(path);
     if (!info.isFile()) throw new Error("Not a file");
     const content = await readFile(path);
-    res.writeHead(200, { "Content-Type": mime[extname(path)] || "application/octet-stream" });
+    res.writeHead(200, {
+      "Content-Type": mime[extname(path)] || "application/octet-stream",
+      "Cache-Control": "no-store",
+    });
     res.end(content);
   } catch {
     json(res, 404, { error: "Not found" });
