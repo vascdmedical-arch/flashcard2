@@ -7,6 +7,8 @@ const root = fileURLToPath(new URL("./public", import.meta.url));
 const port = Number(process.env.PORT || 4173);
 const host = process.env.HOST || "0.0.0.0";
 const model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+const ttsModel = process.env.OPENAI_TTS_MODEL || "gpt-4o-mini-tts";
+const ttsVoice = process.env.OPENAI_TTS_VOICE || "alloy";
 
 const mime = {
   ".html": "text/html; charset=utf-8",
@@ -109,6 +111,52 @@ async function makeQuestions(req, res) {
   }
 }
 
+async function makeSpeech(req, res) {
+  if (!process.env.OPENAI_API_KEY) {
+    return json(res, 503, { error: "APIキーが未設定です", fallback: true });
+  }
+
+  try {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const input = (url.searchParams.get("text") || "").trim();
+    const speed = Math.max(0.6, Math.min(1.2, Number(url.searchParams.get("speed")) || 0.85));
+    if (!input) return json(res, 400, { error: "text is required" });
+    if (input.length > 300) return json(res, 400, { error: "text is too long" });
+
+    const apiResponse = await fetch("https://api.openai.com/v1/audio/speech", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: ttsModel,
+        voice: ttsVoice,
+        input,
+        speed,
+        response_format: "mp3",
+        instructions: "Speak clearly in neutral American English. Read the expression exactly and do not add extra words.",
+      }),
+    });
+
+    if (!apiResponse.ok) {
+      const detail = await apiResponse.text();
+      throw new Error(detail || "OpenAI speech request failed");
+    }
+
+    const audio = Buffer.from(await apiResponse.arrayBuffer());
+    res.writeHead(200, {
+      "Content-Type": "audio/mpeg",
+      "Content-Length": String(audio.length),
+      "Cache-Control": "no-store",
+    });
+    res.end(audio);
+  } catch (error) {
+    console.error(error);
+    return json(res, 502, { error: "音声生成に失敗しました", detail: error.message, fallback: true });
+  }
+}
+
 async function serveFile(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const requested = url.pathname === "/" ? "/index.html" : url.pathname;
@@ -128,8 +176,9 @@ async function serveFile(req, res) {
 
 createServer(async (req, res) => {
   if (req.method === "POST" && req.url === "/api/questions") return makeQuestions(req, res);
+  if (req.method === "GET" && req.url.startsWith("/api/speech")) return makeSpeech(req, res);
   if (req.method === "GET" && req.url === "/api/status") {
-    return json(res, 200, { apiReady: Boolean(process.env.OPENAI_API_KEY), model });
+    return json(res, 200, { apiReady: Boolean(process.env.OPENAI_API_KEY), model, ttsModel, ttsVoice });
   }
   if (req.method === "GET") return serveFile(req, res);
   json(res, 405, { error: "Method not allowed" });
