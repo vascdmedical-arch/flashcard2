@@ -2,90 +2,30 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#f4efe5">
-  <title>NUMO — 英語の数字リスニング</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="refresh" content="0; url=https://flashcard2-yiaq.onrender.com/">
+  <title>NUMO — Render版へ移動中</title>
   <style>
-    :root{--ink:#17251f;--muted:#747d76;--paper:#f4efe5;--card:#fffdf8;--green:#1d4d3e;--lime:#d8ef93;--peach:#efa97f;--line:rgba(23,37,31,.12);--shadow:0 24px 70px rgba(32,42,36,.13)}
-    *{box-sizing:border-box}html,body{min-height:100%}body{margin:0;background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}button,input{font:inherit}button{color:inherit}
-    body:before,body:after{content:"";position:fixed;border-radius:50%;pointer-events:none;z-index:0}body:before{width:420px;height:420px;left:-250px;top:18%;background:rgba(216,239,147,.44)}body:after{width:370px;height:370px;right:-225px;bottom:-100px;background:rgba(239,169,127,.27)}
-    .app{position:relative;z-index:1;width:min(100%,520px);min-height:100dvh;margin:auto;padding:0 24px 32px}.top{height:82px;display:flex;align-items:center;justify-content:space-between}.brand,.saved{border:0;background:transparent;display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.1em;cursor:pointer}.mark{display:grid;place-items:center;width:29px;height:29px;border-radius:9px 9px 9px 2px;background:var(--green);color:var(--lime);letter-spacing:0}.saved{border:1px solid var(--line);background:rgba(255,253,248,.7);border-radius:999px;padding:8px 11px;font-size:12px;letter-spacing:0}.saved b{display:grid;place-items:center;min-width:20px;height:20px;border-radius:50%;background:var(--green);color:white;font-size:10px}
-    .screen{display:none;animation:up .28s ease both}.screen.active{display:block}@keyframes up{from{opacity:0;transform:translateY(8px)}}.eyebrow{margin-top:32px;font-size:11px;font-weight:800;letter-spacing:.2em;color:var(--green)}h1{margin:15px 0 18px;font-size:clamp(40px,10vw,56px);line-height:1.18;letter-spacing:-.06em}h1 em{font-style:normal;color:var(--green);position:relative}h1 em:after{content:"";position:absolute;left:0;right:0;bottom:-7px;height:7px;border-radius:50%;background:var(--peach);opacity:.8}.intro{margin:0 0 38px;color:#68716b;line-height:1.9;font-size:14px}.label{margin-bottom:12px;font-size:12px;font-weight:800}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cat{position:relative;min-height:128px;border:1px solid var(--line);border-radius:20px;background:rgba(255,253,248,.78);padding:17px;text-align:left;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start}.cat.sel{border:2px solid var(--green);padding:16px;background:var(--card);box-shadow:0 12px 35px rgba(29,77,62,.09);transform:translateY(-2px)}.icon{height:43px;margin-bottom:12px;color:var(--green);font-size:26px;font-weight:800;letter-spacing:-.07em}.cal{width:39px;border:1.5px solid var(--green);border-radius:7px;overflow:hidden;display:flex;flex-direction:column;text-align:center}.cal i{background:var(--green);color:#fff;font-style:normal;font-size:7px;line-height:13px;letter-spacing:.1em}.cal b{font-size:17px;line-height:27px}.cat strong{font-size:15px}.cat small{margin-top:3px;color:var(--muted);font-size:10px}.dot{position:absolute;right:16px;top:16px;width:15px;height:15px;border:1px solid #afb5b0;border-radius:50%}.sel .dot{border:4px solid var(--green)}
-    .note{margin:16px 0 22px;padding:13px 15px;border-radius:14px;background:rgba(216,239,147,.28);display:flex;gap:13px;align-items:center}.note .bar{width:4px;height:36px;border-radius:5px;background:rgba(29,77,62,.13);overflow:hidden;flex:none}.note .bar i{display:block;height:70%;background:var(--green)}.note p{margin:0;color:#68716b;font-size:10px;line-height:1.55}.note strong{color:var(--ink);font-size:11px}.primary{width:100%;height:56px;border:0;border-radius:17px;background:var(--green);color:white;font-weight:800;box-shadow:0 15px 30px rgba(29,77,62,.18);cursor:pointer}.api{margin-top:13px;text-align:center;color:#8a908b;font-size:9px}.head{display:flex;align-items:center;justify-content:space-between;margin-top:8px}.head>div{display:flex;flex-direction:column;gap:4px}.session{font-size:9px;font-weight:800;letter-spacing:.18em;color:var(--green)}.count{font-size:10px;color:#949994;letter-spacing:.1em}.close{width:34px;height:34px;border:1px solid var(--line);border-radius:50%;background:rgba(255,253,248,.7);font-size:21px;line-height:1;cursor:pointer}.track{height:3px;background:rgba(29,77,62,.1);border-radius:3px;margin:12px 0 20px;overflow:hidden}.track i{display:block;height:100%;background:var(--green);transition:.25s}
-    .stage{perspective:1000px;touch-action:pan-y}.card{min-height:460px;border-radius:28px;border:1px solid rgba(23,37,31,.08);background:var(--card);box-shadow:var(--shadow);padding:24px;display:flex;flex-direction:column;align-items:center;overflow:hidden;transition:transform .22s,opacity .22s}.card.flyL{transform:translateX(-115%) rotate(-4deg);opacity:0}.card.flyR{transform:translateX(115%) rotate(4deg);opacity:0}.chips{width:100%;display:flex;justify-content:space-between}.chip{border-radius:999px;font-size:8px;font-weight:800;letter-spacing:.16em}.kind{padding:6px 9px;color:var(--green);background:rgba(216,239,147,.35)}.src{padding:5px 8px;border:1px solid var(--line);color:#9a9e9b}.sound{width:112px;height:112px;border:0;border-radius:50%;background:var(--green);color:var(--lime);margin:45px 0 25px;box-shadow:0 17px 35px rgba(29,77,62,.22);cursor:pointer}.sound:active{transform:scale(.95)}.sound.playing{animation:pulse 1s ease infinite}@keyframes pulse{50%{box-shadow:0 17px 35px rgba(29,77,62,.22),0 0 0 12px rgba(29,77,62,.08)}}.waves{display:flex;align-items:center;justify-content:center;gap:5px;height:34px}.waves i{display:block;width:3px;height:13px;border-radius:3px;background:currentColor}.waves i:nth-child(2),.waves i:nth-child(4){height:24px}.waves i:nth-child(3){height:34px}.playing .waves i{animation:wave .7s ease-in-out infinite alternate}.playing .waves i:nth-child(2){animation-delay:-.3s}.playing .waves i:nth-child(3){animation-delay:-.55s}.playing .waves i:nth-child(4){animation-delay:-.2s}@keyframes wave{to{transform:scaleY(.38)}}.card h2{margin:0 0 8px;font-size:19px;letter-spacing:-.03em}.hint{margin:0;text-align:center;color:#9a9f9b;font-size:10px;display:flex;flex-direction:column;gap:4px}.hint strong{color:#286651;font-size:10px}.hint small{font-size:8px}.reveal{margin-top:46px;height:45px;border:1px solid var(--line);border-radius:999px;background:transparent;padding:0 20px;font-size:11px;font-weight:700;cursor:pointer}.answer{display:none;width:100%;margin-top:28px;padding-top:23px;border-top:1px solid var(--line);text-align:center}.answer.show{display:flex;flex-direction:column;align-items:center;animation:up .25s ease both}.answer span{font-size:8px;letter-spacing:.2em;color:#999e9a}.answer b{font-size:clamp(28px,9vw,43px);letter-spacing:-.05em;line-height:1.15;margin:6px 0 1px}.answer p{margin:0;color:#286651;font-size:12px}.answer small{margin-top:7px;color:#8a908b;font-size:9px}.compact .sound{width:72px;height:72px;margin:25px 0 16px}.compact .waves{transform:scale(.7)}.compact .reveal{display:none}
-    .controls{padding:16px 4px 0}.review{width:100%;min-height:58px;border:1px solid var(--line);border-radius:17px;background:rgba(255,253,248,.7);display:flex;align-items:center;padding:10px 14px;text-align:left;cursor:pointer}.review .book{width:22px;height:22px;margin-right:12px;border:2px solid var(--green);border-radius:4px 4px 4px 1px}.review span{display:flex;flex-direction:column}.review strong{font-size:11px}.review small{margin-top:2px;color:#8b918d;font-size:8px}.review:after{content:"";width:35px;height:20px;margin-left:auto;border-radius:999px;background:#d5d8d5;transition:.2s}.review.on{border-color:var(--green);background:rgba(216,239,147,.28)}.review.on .book{background:var(--green)}.review.on:after{background:var(--green);box-shadow:inset 15px 0 0 2px var(--lime)}.speed{padding:18px 4px 8px}.speedTop{display:flex;justify-content:space-between;font-size:9px;font-weight:700}.speedTop output{color:var(--green)}.range{display:grid;grid-template-columns:43px 1fr 36px;gap:7px;align-items:center;margin-top:9px;color:#a1a5a2;font-size:8px}input[type=range]{appearance:none;height:3px;border-radius:4px;background:linear-gradient(90deg,var(--green) 0 42%,rgba(29,77,62,.15) 42%)}input[type=range]::-webkit-slider-thumb{appearance:none;width:17px;height:17px;border-radius:50%;background:var(--green);border:4px solid var(--card);box-shadow:0 1px 5px rgba(0,0,0,.2)}.swipe{text-align:center;color:#a2a6a3;font-size:8px;letter-spacing:.08em;margin-top:4px}.empty{text-align:center;padding-top:22vh}.emptyIcon{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;margin:0 auto 24px;background:rgba(216,239,147,.5);color:var(--green);font-size:31px}.empty h2{font-size:21px}.empty p{color:#7f8580;font-size:12px;line-height:1.8;margin-bottom:30px}.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);opacity:0;background:var(--ink);color:white;padding:10px 15px;border-radius:999px;font-size:10px;pointer-events:none;transition:.25s;z-index:10;white-space:nowrap}.toast.show{opacity:1;transform:translate(-50%,0)}
-    @media(max-height:760px){.top{height:65px}.eyebrow{margin-top:15px}h1{font-size:39px;margin-top:9px}.intro{margin-bottom:24px}.card{min-height:405px}.sound{width:94px;height:94px;margin:30px 0 18px}.reveal{margin-top:30px}}
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      background: #f4efe5;
+      color: #17251f;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+      text-align: center;
+      padding: 24px;
+    }
+    a { color: #1d4d3e; font-weight: 700; }
   </style>
 </head>
 <body>
-<main class="app">
-  <header class="top">
-    <button class="brand" id="home" aria-label="ホームへ戻る"><span class="mark">N</span><span>NUMO</span></button>
-    <button class="saved" id="savedBtn" aria-label="復習リストを開く">復習 <b id="savedN">0</b></button>
-  </header>
-  <section class="screen active" id="setup">
-    <div class="eyebrow">LISTENING PRACTICE</div>
-    <h1>数字を、<br><em>耳でつかむ。</em></h1>
-    <p class="intro">見ればわかる数字も、聞くと迷う。<br>短い反復で、英語の数を音のかたまりに。</p>
-    <div class="label">今日のトレーニング</div>
-    <div class="grid" role="radiogroup" aria-label="ジャンル">
-      <button class="cat sel" data-cat="numbers" role="radio" aria-checked="true"><span class="icon">128</span><strong>数字</strong><small>0 〜 1兆</small><i class="dot"></i></button>
-      <button class="cat" data-cat="dates" role="radio" aria-checked="false"><span class="icon cal"><i>SEP</i><b>23</b></span><strong>日付・年</strong><small>月日と西暦</small><i class="dot"></i></button>
-    </div>
-    <div class="note" id="note"><span class="bar"><i></i></span><p><strong>よく使う範囲を多めに</strong><br>100〜1億の問題が約70%</p></div>
-    <button class="primary" id="start">はじめる</button>
-    <div class="api">GitHub Pages版：内蔵問題で動作します</div>
-  </section>
-  <section class="screen" id="practice">
-    <div class="head"><div><span class="session" id="session">NUMBERS</span><span class="count"><b id="now">01</b> / <span id="total">12</span></span></div><button class="close" id="close" aria-label="練習を終了">×</button></div>
-    <div class="track"><i id="bar"></i></div>
-    <div class="stage" id="stage"><article class="card" id="card">
-      <div class="chips"><span class="chip kind" id="kind">NUMBER</span><span class="chip src">LOCAL</span></div>
-      <button class="sound" id="sound" aria-label="もう一度聞く"><span class="waves"><i></i><i></i><i></i><i></i><i></i></span></button>
-      <h2>聞こえた数字は？</h2>
-      <p class="hint"><strong id="replay">タップで何度でも再生</strong><small id="plays">まだ再生していません</small></p>
-      <button class="reveal" id="reveal">答えを見る</button>
-      <div class="answer" id="answer"><span>ANSWER</span><b id="answerText"></b><p id="spoken"></p><small id="memo"></small></div>
-    </article></div>
-    <div class="controls">
-      <button class="review" id="review"><i class="book"></i><span><strong>もう一度</strong><small>復習リストに残す</small></span></button>
-      <div class="speed"><div class="speedTop"><span>発音スピード</span><output id="speedOut">0.85×</output></div><div class="range"><span>ゆっくり</span><input id="speed" type="range" min=".6" max="1.2" step=".05" value=".85" aria-label="発音スピード"><span>ふつう</span></div></div>
-      <div class="swipe">← スワイプで移動 →</div>
-    </div>
-  </section>
-  <section class="screen empty" id="empty"><div class="emptyIcon">✓</div><h2>復習リストは空です</h2><p>練習中に「もう一度」をチェックすると、<br>ここに問題が残ります。</p><button class="primary" id="back">練習をはじめる</button></section>
-  <div class="toast" id="toast" role="status"></div>
-</main>
-<script>
-const $=s=>document.querySelector(s),screens=[$("#setup"),$("#practice"),$("#empty")];
-const state={cat:"numbers",qs:[],i:0,saved:JSON.parse(localStorage.getItem("numo-saved")||"[]"),speed:Number(localStorage.getItem("numo-speed"))||.85,x:0,dx:0,plays:0,serial:0};
-const small=["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"];
-const tens=["","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"],months=["January","February","March","April","May","June","July","August","September","October","November","December"];
-const ord=["","first","second","third","fourth","fifth","sixth","seventh","eighth","ninth","tenth","eleventh","twelfth","thirteenth","fourteenth","fifteenth","sixteenth","seventeenth","eighteenth","nineteenth","twentieth","twenty-first","twenty-second","twenty-third","twenty-fourth","twenty-fifth","twenty-sixth","twenty-seventh","twenty-eighth","twenty-ninth","thirtieth","thirty-first"];
-function r(a,b){return Math.floor(Math.random()*(b-a+1))+a}
-function under1000(n){let p=[];if(n>=100){p.push(`${small[Math.floor(n/100)]} hundred`);n%=100}if(n>=20)p.push(tens[Math.floor(n/10)]+(n%10?`-${small[n%10]}`:""));else if(n>0||!p.length)p.push(small[n]);return p.join(" ")}
-function words(v){if(v===0)return"zero";let n=v,p=[],g=[[1e12,"trillion"],[1e9,"billion"],[1e6,"million"],[1e3,"thousand"]];for(const [s,l]of g)if(n>=s){let a=Math.floor(n/s);p.push(`${under1000(a)} ${l}`);n%=s}if(n)p.push(under1000(n));return p.join(" ")}
-function year(y){if(y>=2000&&y<=2009)return`two thousand${y%2000?` ${words(y%2000)}`:""}`;if(y>=2010&&y<=2099)return`twenty ${y%100<10?`oh ${small[y%10]}`:words(y%100)}`;let a=Math.floor(y/100),b=y%100;return`${words(a)} ${b===0?"hundred":b<10?`oh ${small[b]}`:words(b)}`}
-function nums(n){let a=[],seen=new Set;while(a.length<n){let roll=Math.random(),v=roll<.7?r(100,100000000):roll<.83?r(0,99):roll<.95?r(100000001,1000000000):r(2,1000)*1000000000;if(seen.has(v))continue;seen.add(v);a.push({kind:"number",spoken:words(v),answer:v.toLocaleString("en-US"),note:""})}return a}
-function dates(n){return Array.from({length:n},(_,i)=>{if(i%2===0){let m=r(0,11),max=[3,5,8,10].includes(m)?30:m===1?28:31,d=r(1,max);return{kind:"date",spoken:`${months[m]} ${ord[d]}`,answer:`${months[m]} ${d}`,note:""}}let y=r(1900,2099);return{kind:"year",spoken:year(y),answer:String(y),note:y<2010&&y%100<10?"oh の音に注目":""}}).sort(()=>Math.random()-.5)}
-function ids(qs){return qs.map(q=>({...q,id:`${q.kind}:${q.answer}:${q.spoken}`}))}
-function show(s){screens.forEach(x=>x.classList.toggle("active",x===s));scrollTo({top:0,behavior:"smooth"})}
-function cur(){return state.qs[state.i]}function saved(q=cur()){return state.saved.some(x=>x.id===q?.id)}
-function persist(){localStorage.setItem("numo-saved",JSON.stringify(state.saved));$("#savedN").textContent=state.saved.length}
-function toast(m){let e=$("#toast");e.textContent=m;e.classList.add("show");clearTimeout(window.tT);window.tT=setTimeout(()=>e.classList.remove("show"),1800)}
-function card(auto=false){let q=cur();if(!q)return;if(window.speechSynthesis)speechSynthesis.cancel();state.serial++;state.plays=0;$("#plays").textContent="まだ再生していません";$("#replay").textContent="タップで何度でも再生";$("#answer").classList.remove("show");$("#card").classList.remove("compact","flyL","flyR");$("#card").style.transform="";$("#answerText").textContent=q.answer;$("#spoken").textContent=q.spoken;$("#memo").textContent=q.note||"";$("#kind").textContent=q.kind==="number"?"NUMBER":q.kind==="date"?"DATE":"YEAR";$("#now").textContent=String(state.i+1).padStart(2,"0");$("#total").textContent=String(state.qs.length).padStart(2,"0");$("#bar").style.width=`${(state.i+1)/state.qs.length*100}%`;$("#review").classList.toggle("on",saved(q));if(auto)setTimeout(speak,300)}
-function voice(){let vs=speechSynthesis.getVoices();return vs.find(v=>v.lang==="en-US"&&/Samantha|Google|Microsoft|Premium/i.test(v.name))||vs.find(v=>v.lang==="en-US")||vs.find(v=>v.lang.startsWith("en"))}
-function speak(){let q=cur();if(!q||!window.speechSynthesis||typeof SpeechSynthesisUtterance==="undefined")return toast("このブラウザは音声再生に対応していません");let s=++state.serial;state.plays++;$("#replay").textContent="もう一度聞く";$("#plays").textContent=`${state.plays}回再生・何回でも聞けます`;speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(q.spoken);u.lang="en-US";u.rate=state.speed;u.pitch=1;let v=voice();if(v)u.voice=v;u.onstart=()=>{if(s===state.serial)$("#sound").classList.add("playing")};u.onend=u.onerror=()=>{if(s===state.serial)$("#sound").classList.remove("playing")};setTimeout(()=>{if(s===state.serial)speechSynthesis.speak(u)},60)}
-function move(d){if(state.qs.length<2)return;let n=state.i+d;if(n<0)return toast("最初の問題です");if(n>=state.qs.length){state.i=0;toast("1周しました。もう一度！");return card()}$("#card").classList.add(d>0?"flyL":"flyR");setTimeout(()=>{state.i=n;card()},210)}
-function start(){state.qs=ids(state.cat==="numbers"?nums(12):dates(12));state.i=0;$("#session").textContent=state.cat==="numbers"?"NUMBERS":"DATES & YEARS";show($("#practice"));card()}
-document.querySelectorAll(".cat").forEach(b=>b.onclick=()=>{state.cat=b.dataset.cat;document.querySelectorAll(".cat").forEach(x=>{let on=x===b;x.classList.toggle("sel",on);x.setAttribute("aria-checked",String(on))});$("#note").innerHTML=state.cat==="numbers"?'<span class="bar"><i></i></span><p><strong>よく使う範囲を多めに</strong><br>100〜1億の問題が約70%</p>':'<span class="bar"><i></i></span><p><strong>月日と年をバランスよく</strong><br>聞き分けにくい西暦も練習</p>'});
-$("#start").onclick=start;$("#sound").onclick=speak;$("#reveal").onclick=()=>{$("#answer").classList.add("show");$("#card").classList.add("compact")};$("#review").onclick=()=>{let q=cur();if(!q)return;if(saved(q)){state.saved=state.saved.filter(x=>x.id!==q.id);toast("復習リストから外しました")}else{state.saved.push(q);toast("復習リストに残しました")}persist();$("#review").classList.toggle("on",saved(q))};
-$("#speed").value=String(state.speed);function speedUI(){state.speed=Number($("#speed").value);localStorage.setItem("numo-speed",String(state.speed));$("#speedOut").textContent=`${state.speed.toFixed(2)}×`;let p=(state.speed-.6)/.6*100;$("#speed").style.background=`linear-gradient(90deg,var(--green) 0 ${p}%,rgba(29,77,62,.15) ${p}%)`}$("#speed").oninput=speedUI;speedUI();
-function home(){if(window.speechSynthesis)speechSynthesis.cancel();show($("#setup"))}$("#home").onclick=home;$("#close").onclick=home;$("#back").onclick=home;$("#savedBtn").onclick=()=>{if(!state.saved.length)return show($("#empty"));state.qs=[...state.saved];state.i=0;$("#session").textContent="REVIEW LIST";show($("#practice"));card()};
-const st=$("#stage");st.onpointerdown=e=>{state.x=e.clientX;state.dx=0;st.setPointerCapture(e.pointerId)};st.onpointermove=e=>{if(!st.hasPointerCapture(e.pointerId))return;state.dx=e.clientX-state.x;$("#card").style.transform=`translateX(${state.dx*.42}px) rotate(${state.dx*.012}deg)`};st.onpointerup=e=>{$("#card").style.transform="";if(Math.abs(state.dx)>60)move(state.dx<0?1:-1);state.dx=0;try{st.releasePointerCapture(e.pointerId)}catch{}};
-document.onkeydown=e=>{if(!$("#practice").classList.contains("active"))return;if(e.key==="ArrowRight")move(1);if(e.key==="ArrowLeft")move(-1);if(e.code==="Space"){e.preventDefault();speak()}if(e.key==="Enter"){$("#answer").classList.add("show");$("#card").classList.add("compact")}};
-persist();
-</script>
+  <main>
+    <h1>Render版へ移動しています</h1>
+    <p>自動で移動しない場合は、下のリンクを開いてください。</p>
+    <p><a href="https://flashcard2-yiaq.onrender.com/">https://flashcard2-yiaq.onrender.com/</a></p>
+  </main>
+  <script>location.replace("https://flashcard2-yiaq.onrender.com/");</script>
 </body>
 </html>
