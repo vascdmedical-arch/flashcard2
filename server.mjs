@@ -9,6 +9,9 @@ const host = process.env.HOST || "0.0.0.0";
 const model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
 const ttsModel = process.env.OPENAI_TTS_MODEL || "gpt-4o-mini-tts";
 const ttsVoice = process.env.OPENAI_TTS_VOICE || "alloy";
+const speechCache = new Map();
+const speechCacheLimit = Math.max(20, Math.min(300, Number(process.env.SPEECH_CACHE_LIMIT) || 120));
+const speechCacheMaxAgeMs = Math.max(60_000, Math.min(86_400_000, Number(process.env.SPEECH_CACHE_MAX_AGE_MS) || 86_400_000));
 
 const mime = {
   ".html": "text/html; charset=utf-8",
@@ -72,6 +75,39 @@ function extractText(data) {
   throw new Error("The API returned no text output");
 }
 
+function speechCacheKey(input, speed) {
+  return JSON.stringify([ttsModel, ttsVoice, speed.toFixed(2), input]);
+}
+
+function getCachedSpeech(key) {
+  const hit = speechCache.get(key);
+  if (!hit) return null;
+  if (Date.now() - hit.createdAt > speechCacheMaxAgeMs) {
+    speechCache.delete(key);
+    return null;
+  }
+  speechCache.delete(key);
+  speechCache.set(key, hit);
+  return hit.audio;
+}
+
+function putCachedSpeech(key, audio) {
+  speechCache.set(key, { audio, createdAt: Date.now() });
+  while (speechCache.size > speechCacheLimit) {
+    const oldestKey = speechCache.keys().next().value;
+    speechCache.delete(oldestKey);
+  }
+}
+
+function sendAudio(res, audio) {
+  res.writeHead(200, {
+    "Content-Type": "audio/mpeg",
+    "Content-Length": String(audio.length),
+    "Cache-Control": `public, max-age=${Math.floor(speechCacheMaxAgeMs / 1000)}`,
+  });
+  res.end(audio);
+}
+
 async function makeQuestions(req, res) {
   if (!process.env.OPENAI_API_KEY) {
     return json(res, 503, { error: "APIキーが未設定です", fallback: true });
@@ -119,9 +155,13 @@ async function makeSpeech(req, res) {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const input = (url.searchParams.get("text") || "").trim();
-    const speed = Math.max(0.6, Math.min(1.2, Number(url.searchParams.get("speed")) || 0.85));
+    const speed = Number(Math.max(0.6, Math.min(1.2, Number(url.searchParams.get("speed")) || 0.85)).toFixed(2));
     if (!input) return json(res, 400, { error: "text is required" });
     if (input.length > 300) return json(res, 400, { error: "text is too long" });
+
+    const cacheKey = speechCacheKey(input, speed);
+    const cached = getCachedSpeech(cacheKey);
+    if (cached) return sendAudio(res, cached);
 
     const apiResponse = await fetch("https://api.openai.com/v1/audio/speech", {
       method: "POST",
@@ -145,12 +185,8 @@ async function makeSpeech(req, res) {
     }
 
     const audio = Buffer.from(await apiResponse.arrayBuffer());
-    res.writeHead(200, {
-      "Content-Type": "audio/mpeg",
-      "Content-Length": String(audio.length),
-      "Cache-Control": "no-store",
-    });
-    res.end(audio);
+    putCachedSpeech(cacheKey, audio);
+    return sendAudio(res, audio);
   } catch (error) {
     console.error(error);
     return json(res, 502, { error: "音声生成に失敗しました", detail: error.message, fallback: true });
