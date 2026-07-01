@@ -8,7 +8,7 @@ const state = {
   source: "built-in",
   reviewMode: false,
   speed: Number(localStorage.getItem("numo-speed")) || 0.85,
-  numberDigits: ["3", "4", "5"].includes(localStorage.getItem("numo-number-digits")) ? localStorage.getItem("numo-number-digits") : "random",
+  numberDigits: ["2", "3", "4", "5"].includes(localStorage.getItem("numo-number-digits")) ? localStorage.getItem("numo-number-digits") : "random",
   saved: JSON.parse(localStorage.getItem("numo-saved") || "[]"),
   startX: 0,
   deltaX: 0,
@@ -47,6 +47,7 @@ function numberToWords(value) {
 function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
 function digitRange(digits) {
+  if (digits === "2") return [10, 99];
   if (digits === "3") return [100, 999];
   if (digits === "4") return [1_000, 9_999];
   if (digits === "5") return [10_000, 99_999];
@@ -130,6 +131,7 @@ function persistSaved() {
 function numberModeDetails() {
   const details = {
     random: ["よく使う範囲を多めに", "100〜1億の問題が約70%"],
+    "2": ["2桁だけ", "10〜99を集中練習"],
     "3": ["3桁だけ", "100〜999を集中練習"],
     "4": ["4桁だけ", "1,000〜9,999を集中練習"],
     "5": ["5桁だけ", "10,000〜99,999を集中練習"],
