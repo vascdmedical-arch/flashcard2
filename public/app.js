@@ -8,12 +8,15 @@ const state = {
   source: "built-in",
   reviewMode: false,
   speed: Number(localStorage.getItem("numo-speed")) || 0.85,
+  numberDigits: ["3", "4", "5"].includes(localStorage.getItem("numo-number-digits")) ? localStorage.getItem("numo-number-digits") : "random",
   saved: JSON.parse(localStorage.getItem("numo-saved") || "[]"),
   startX: 0,
   deltaX: 0,
   playCount: 0,
   playSerial: 0,
   audio: null,
+  audioCache: new Map(),
+  prepareTimer: null,
 };
 
 const small = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
@@ -43,13 +46,22 @@ function numberToWords(value) {
 
 function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
-function builtInNumbers(count) {
+function digitRange(digits) {
+  if (digits === "3") return [100, 999];
+  if (digits === "4") return [1_000, 9_999];
+  if (digits === "5") return [10_000, 99_999];
+  return null;
+}
+
+function builtInNumbers(count, digits = state.numberDigits) {
   const questions = [];
   const seen = new Set();
   while (questions.length < count) {
+    const range = digitRange(digits);
     const roll = Math.random();
     let value;
-    if (roll < .7) value = randomInt(100, 100_000_000);
+    if (range) value = randomInt(range[0], range[1]);
+    else if (roll < .7) value = randomInt(100, 100_000_000);
     else if (roll < .83) value = randomInt(0, 99);
     else if (roll < .95) value = randomInt(100_000_001, 1_000_000_000);
     else value = randomInt(2, 1000) * 1_000_000_000;
@@ -85,9 +97,13 @@ function addIds(questions) {
 }
 
 async function loadQuestions() {
-  const fallback = () => state.category === "numbers" ? builtInNumbers(12) : builtInDates(12);
+  const fallback = () => state.category === "numbers" ? builtInNumbers(12, state.numberDigits) : builtInDates(12);
   try {
-    const response = await fetch("/api/questions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ category: state.category, count: 12 }) });
+    const response = await fetch("/api/questions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ category: state.category, count: 12, numberDigits: state.numberDigits }),
+    });
     if (!response.ok) throw new Error("fallback");
     const data = await response.json();
     state.questions = addIds(data.questions);
@@ -111,6 +127,35 @@ function persistSaved() {
   $("#savedCount").textContent = state.saved.length;
 }
 
+function numberModeDetails() {
+  const details = {
+    random: ["よく使う範囲を多めに", "100〜1億の問題が約70%"],
+    "3": ["3桁だけ", "100〜999を集中練習"],
+    "4": ["4桁だけ", "1,000〜9,999を集中練習"],
+    "5": ["5桁だけ", "10,000〜99,999を集中練習"],
+  };
+  return details[state.numberDigits] || details.random;
+}
+
+function updateDistributionNote() {
+  if (state.category === "numbers") {
+    const [title, body] = numberModeDetails();
+    $("#distributionNote").innerHTML = `<span class="bar"><i></i></span><p><strong>${title}</strong><br>${body}</p>`;
+    return;
+  }
+  $("#distributionNote").innerHTML = '<span class="bar"><i></i></span><p><strong>月日と年をバランスよく</strong><br>聞き分けにくい西暦も練習</p>';
+}
+
+function updateNumberModeUI() {
+  $("#numberMode").classList.toggle("hidden", state.category !== "numbers");
+  document.querySelectorAll(".number-mode-button").forEach((button) => {
+    const selected = button.dataset.digits === state.numberDigits;
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-checked", String(selected));
+  });
+  updateDistributionNote();
+}
+
 function stopPlayback() {
   if (state.audio) {
     state.audio.pause();
@@ -128,6 +173,68 @@ function setSpeaking(serial, speaking) {
 
 function canUseServerSpeech() {
   return location.protocol === "http:" || location.protocol === "https:";
+}
+
+function speechKey(q) {
+  return q ? `${state.speed.toFixed(2)}::${q.spoken}` : "";
+}
+
+function speechUrl(q) {
+  const params = new URLSearchParams({
+    text: q.spoken,
+    speed: state.speed.toFixed(2),
+  });
+  return `/api/speech?${params.toString()}`;
+}
+
+function trimAudioCache() {
+  while (state.audioCache.size > 24) {
+    const [key, entry] = state.audioCache.entries().next().value;
+    if (entry?.objectUrl) URL.revokeObjectURL(entry.objectUrl);
+    state.audioCache.delete(key);
+  }
+}
+
+async function prepareSpeech(q = current(), { quiet = false } = {}) {
+  if (!q || !canUseServerSpeech()) return null;
+  const key = speechKey(q);
+  const existing = state.audioCache.get(key);
+  if (existing?.status === "ready") return existing;
+  if (existing?.promise) return existing.promise;
+
+  if (!quiet && q === current() && state.playCount === 0) {
+    $("#replayLabel").textContent = "音声を準備中…";
+  }
+
+  const entry = { status: "pending", objectUrl: "", promise: null };
+  entry.promise = fetch(speechUrl(q))
+    .then((response) => {
+      if (!response.ok) throw new Error("speech failed");
+      return response.blob();
+    })
+    .then((blob) => {
+      entry.objectUrl = URL.createObjectURL(blob);
+      entry.status = "ready";
+      entry.promise = null;
+      trimAudioCache();
+      if (q === current() && state.playCount === 0) $("#replayLabel").textContent = "タップで何度でも再生";
+      return entry;
+    })
+    .catch((error) => {
+      state.audioCache.delete(key);
+      if (q === current() && state.playCount === 0) $("#replayLabel").textContent = "タップで何度でも再生";
+      throw error;
+    });
+  state.audioCache.set(key, entry);
+  return entry.promise;
+}
+
+function prepareNearbySpeech() {
+  const q = current();
+  if (!q) return;
+  prepareSpeech(q).catch(() => {});
+  const next = state.questions[(state.index + 1) % state.questions.length];
+  if (next && next !== q) setTimeout(() => prepareSpeech(next, { quiet: true }).catch(() => {}), 450);
 }
 
 function updateCard() {
@@ -149,6 +256,7 @@ function updateCard() {
   $("#progressFill").style.width = `${((state.index + 1) / state.questions.length) * 100}%`;
   $("#reviewToggle").setAttribute("aria-pressed", String(isSaved(q)));
   $("#listenCard").className = "listen-card";
+  prepareNearbySpeech();
 }
 
 function preferredVoice() {
@@ -184,7 +292,7 @@ async function speak() {
   const serial = ++state.playSerial;
   stopPlayback();
   state.playCount += 1;
-  $("#replayLabel").textContent = "もう一度聞く";
+  $("#replayLabel").textContent = "音声を準備中…";
   $("#playCount").textContent = `${state.playCount}回再生・何回でも聞けます`;
 
   if (!canUseServerSpeech()) return speakWithBrowser(q, serial);
@@ -198,26 +306,27 @@ async function speak() {
       state.audio.pause();
       state.audio = null;
     }
+    $("#replayLabel").textContent = "もう一度聞く";
     speakWithBrowser(q, serial);
   };
 
-  const params = new URLSearchParams({
-    text: q.spoken,
-    speed: String(state.speed),
-    v: String(Date.now()),
-  });
-  const audio = new Audio(`/api/speech?${params.toString()}`);
-  audio.preload = "auto";
-  state.audio = audio;
-  audio.onplaying = () => setSpeaking(serial, true);
-  audio.onended = () => {
-    if (serial !== state.playSerial) return;
-    setSpeaking(serial, false);
-    if (state.audio === audio) state.audio = null;
-  };
-  audio.onerror = fallback;
-
   try {
+    const entry = await prepareSpeech(q, { quiet: true });
+    if (serial !== state.playSerial) return;
+    if (!entry?.objectUrl) throw new Error("speech not ready");
+    const audio = new Audio(entry.objectUrl);
+    audio.preload = "auto";
+    state.audio = audio;
+    audio.onplaying = () => {
+      $("#replayLabel").textContent = "もう一度聞く";
+      setSpeaking(serial, true);
+    };
+    audio.onended = () => {
+      if (serial !== state.playSerial) return;
+      setSpeaking(serial, false);
+      if (state.audio === audio) state.audio = null;
+    };
+    audio.onerror = fallback;
     const play = audio.play();
     if (play?.catch) await play;
   } catch {
@@ -257,7 +366,9 @@ async function startSession() {
   state.reviewMode = false;
   await loadQuestions();
   state.index = 0;
-  $("#sessionLabel").textContent = state.category === "numbers" ? "NUMBERS" : "DATES & YEARS";
+  $("#sessionLabel").textContent = state.category === "numbers"
+    ? state.numberDigits === "random" ? "NUMBERS" : `${state.numberDigits}-DIGIT NUMBERS`
+    : "DATES & YEARS";
   button.classList.remove("loading");
   button.disabled = false;
   button.querySelector("span").textContent = "はじめる";
@@ -272,10 +383,13 @@ document.querySelectorAll(".category-card").forEach((button) => button.addEventL
     item.classList.toggle("selected", selected);
     item.setAttribute("aria-checked", String(selected));
   });
-  const numbers = state.category === "numbers";
-  $("#distributionNote").innerHTML = numbers
-    ? '<span class="bar"><i></i></span><p><strong>よく使う範囲を多めに</strong><br>100〜1億の問題が約70%</p>'
-    : '<span class="bar"><i></i></span><p><strong>月日と年をバランスよく</strong><br>聞き分けにくい西暦も練習</p>';
+  updateNumberModeUI();
+}));
+
+document.querySelectorAll(".number-mode-button").forEach((button) => button.addEventListener("click", () => {
+  state.numberDigits = button.dataset.digits || "random";
+  localStorage.setItem("numo-number-digits", state.numberDigits);
+  updateNumberModeUI();
 }));
 
 $("#startButton").addEventListener("click", startSession);
@@ -303,6 +417,8 @@ $("#speedRange").addEventListener("input", (event) => {
   $("#speedOutput").value = `${state.speed.toFixed(2)}×`;
   const pct = ((state.speed - .6) / .6) * 100;
   event.target.style.background = `linear-gradient(90deg, var(--green) 0 ${pct}%, rgba(29,77,62,.15) ${pct}%)`;
+  clearTimeout(state.prepareTimer);
+  state.prepareTimer = setTimeout(() => prepareSpeech(current(), { quiet: true }).catch(() => {}), 350);
 });
 $("#speedRange").dispatchEvent(new Event("input"));
 
@@ -344,6 +460,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 persistSaved();
+updateNumberModeUI();
 fetch("/api/status").then((res) => res.json()).then((data) => {
   $("#apiStatus").textContent = data.apiReady ? `ChatGPT APIで出題・音声再生（${data.model}）` : "内蔵問題でお試しできます";
   $("#apiDot").classList.toggle("online", data.apiReady);
