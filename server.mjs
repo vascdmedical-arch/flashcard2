@@ -47,7 +47,7 @@ const schema = {
 const instructions = `You create English listening flashcards for a Japanese learner.
 Return exactly the requested number of unique questions.
 For kind=number, spoken must be natural English number words and answer must use digits with comma separators. Use integers only, from 0 through 1,000,000,000,000. About 70% of number questions must be between 100 and 100,000,000 because that range is especially important. Mix round and irregular values. Use American-style number wording without "and" (for example, "six hundred twenty-one").
-When the request specifies 3-digit, 4-digit, or 5-digit numbers, every kind=number question must stay inside that exact digit range: 100-999, 1,000-9,999, or 10,000-99,999.
+When the request specifies 2-digit, 3-digit, 4-digit, or 5-digit numbers, every kind=number question must stay inside that exact digit range: 10-99, 100-999, 1,000-9,999, or 10,000-99,999.
 For kind=date, spoken must be a natural US English month-and-day expression (for example, "September twenty-third"); answer must be "September 23". Do not include a year.
 For kind=year, spoken must be the way a native speaker normally says that calendar year; answer must be the four-digit year. Include a helpful Japanese note only when the pronunciation is potentially confusing; otherwise use an empty string.
 Never include clues or extra prose in spoken.`;
@@ -117,9 +117,10 @@ async function makeQuestions(req, res) {
   try {
     const body = await readBody(req);
     const category = body.category === "dates" ? "dates" : "numbers";
-    const numberDigits = ["3", "4", "5"].includes(String(body.numberDigits)) ? String(body.numberDigits) : "random";
+    const numberDigits = ["2", "3", "4", "5"].includes(String(body.numberDigits)) ? String(body.numberDigits) : "random";
     const count = Math.max(4, Math.min(20, Number(body.count) || 12));
     const digitRanges = {
+      "2": "from 10 through 99",
       "3": "from 100 through 999",
       "4": "from 1,000 through 9,999",
       "5": "from 10,000 through 99,999",
