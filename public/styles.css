@@ -65,7 +65,7 @@ h1 em::after { content: ""; position: absolute; height: 7px; left: 0; right: 0; 
 .number-mode { margin-top: 14px; }
 .number-mode.hidden { display: none; }
 .number-mode-head { font-size: 10px; font-weight: 700; color: var(--green-2); margin: 0 0 8px 2px; }
-.number-mode-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+.number-mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
 .number-mode-button { min-height: 53px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,253,248,.62); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 8px 5px; transition: .18s ease; }
 .number-mode-button strong { font-family: "Noto Sans JP"; font-size: 10px; letter-spacing: -.02em; }
 .number-mode-button small { color: var(--muted); font-size: 7px; white-space: nowrap; }
